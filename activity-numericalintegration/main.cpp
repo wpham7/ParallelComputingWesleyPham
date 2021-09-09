@@ -3,6 +3,8 @@
 #include <cstdlib>
 #include <chrono>
 
+using namespace std;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -23,6 +25,49 @@ int main (int argc, char* argv[]) {
     std::cerr<<"usage: "<<argv[0]<<" <functionid> <a> <b> <n> <intensity>"<<std::endl;
     return -1;
   }
-  
+
+  int functionid = atoi(argv[1]);
+  float a = atof(argv[2]);
+  float b = atof(argv[3]);
+  int n = atoi(argv[4]);
+  int intensity = atoi(argv[5]);
+  float x = 0.0;
+
+  auto start = std::chrono::system_clock::now();
+
+  if (functionid == 1) {
+    for (int i; i < n; i++) {
+      x += f1((a+(i+.5)*((b-a)/n)), intensity);
+    }
+    x = x * ((b-a)/n);
+     cout <<  x << endl;
+  }
+  else if (functionid == 2){
+    for (int i; i < n; i++) {
+      x += f2((a+(i+.5)*((b-a)/n)), intensity);
+    }
+    x = x * ((b-a)/n);
+     cout <<  x << endl;
+  }
+  else if (functionid == 3){
+    for (int i; i < n; i++) {
+      x += f3((a+(i+.5)*((b-a)/n)), intensity);
+    }
+    x = x * ((b-a)/n);
+     cout <<  x << endl;
+  }
+  else if (functionid == 4){
+    for (int i; i < n; i++) {
+      x += f4((a+(i+.5)*((b-a)/n)), intensity);
+    }
+    x = x * ((b-a)/n);
+     cout <<  x << endl;
+  }
+
+  auto end = std::chrono::system_clock::now();
+  auto duration = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
+
+  std::cer<<duration<<std::endl;
+
   return 0;
 }
