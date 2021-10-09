@@ -2,6 +2,9 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <iostream>
+#include <thread>
+#include <mutex>
 
 #include "Dictionary.cpp"
 #include "MyHashtable.cpp"
@@ -45,7 +48,13 @@ std::vector<std::vector<std::string>> tokenizeLyrics(const std::vector<std::stri
   return ret;
 }
 
-
+void openfileandlistwords(std::string& w){
+  MyHashtable<std::string, int>ht;
+  Dictionary<std::string, int>& dict = ht;
+      int count = dict.get(w);
+      ++count;
+      dict.set(w, count);
+}
 
 int main(int argc, char **argv)
 {
@@ -76,8 +85,34 @@ int main(int argc, char **argv)
 
 
   // write code here
+    // Start Timer
+  auto start =std::chrono::steady_clock::now();
+
+  //Code to create mutex std::mutex& mut1 and to lock/unlock mut1.lock()
+  std::vector<std::thread> mythreads;
+  
+  for (auto & filecontent: wordmap){
+    for (auto & w : filecontent){
+      std::thread mythread(openfileandlistwords, std::ref(w));
+      mythreads.push_back(std::move(mythread));
+    }
+  }
+  
+  
+  for (auto & t : mythreads){
+    if(t.joinable())
+      t.join();
+    else
+    std::cout<<"join does not work\n";
+  }
+  
 
 
+
+
+  // Stop Timer
+  auto stop = std::chrono::steady_clock::now();
+  std::chrono::duration<double> time_elapsed = stop-start;
 
 
 
@@ -99,3 +134,5 @@ int main(int argc, char **argv)
 
   return 0;
 }
+
+
