@@ -90,11 +90,14 @@ int main(int argc, char **argv)
 
   //Code to create mutex std::mutex& mut1 and to lock/unlock mut1.lock()
   std::vector<std::thread> mythreads;
-  
+  std::mutex mut;
+
   for (auto & filecontent: wordmap){
     for (auto & w : filecontent){
+      mut.lock();
       std::thread mythread(openfileandlistwords, std::ref(w));
       mythreads.push_back(std::move(mythread));
+      mut.unlock();
     }
   }
   
