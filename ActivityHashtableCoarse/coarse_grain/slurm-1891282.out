@@ -1,4 +1,0 @@
-running on gal-c2.uncc.edu
-THREAD=3: before starting time is Fri Oct 8 20:46:41 EDT 2021
-/var/spool/slurm/slurmd/job1891282/slurm_script: line 17: 2043588 Aborted                 (core dumped) ./main benchmark_sources.txt the 1000000 2> ${RESULTDIR}/coarse_${THREAD} > /dev/null
-THREAD=3: after ending time is Fri Oct 8 20:48:07 EDT 2021

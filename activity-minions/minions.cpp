@@ -17,6 +17,7 @@ int main (int argc, char** argv) {
   for (int i = 0; i < atoi(argv[1]); i++) {
     std::thread minion_thread(f, (i+1));
 
+    
     minion_thread.join();
   }
 
