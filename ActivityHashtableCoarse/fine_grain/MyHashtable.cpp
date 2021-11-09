@@ -1,10 +1,11 @@
 #ifndef _MY_HASHTABLE_H
 #define _MY_HASHTABLE_H
-
 #include "Dictionary.cpp"
 #include <functional>
 #include <iostream>
 #include <vector>
+#include <mutex>
+#include <condition_variable>
 
 template<class K, class V>
 struct Node {
@@ -29,6 +30,8 @@ protected:
   int count;
   double loadFactor;
   std::vector<Node<K,V>*> table;
+  
+  std::mutex mutex_vector[100000];
 
   struct hashtable_iter : public dict_iter {
     MyHashtable& mt;
@@ -135,7 +138,7 @@ public:
       node = node->next;
     }
 
-    //if we get here, then the key has not been found
+
     node = new Node<K,V>(key, value);
     node->next = this->table[index];
     this->table[index] = node;
@@ -143,6 +146,49 @@ public:
     if (((double)this->count)/this->capacity > this->loadFactor) {
       this->resize(this->capacity * 2);
     }
+  }
+
+  /**
+   * modify the node at given key
+   * @param key key of node to be modified
+   */
+  virtual void update(K& key){
+    int status = 0;
+    std::condition_variable_any cond;
+
+    std::size_t index = std::hash<K>{}(key) % this->capacity;
+    index = index < 0 ? index + this->capacity : index;
+
+    
+    Node<K,V>* node = this->table[index];
+
+    mutex_vector[index].lock();
+    cond.wait(mutex_vector[index], [&](){return !status;});
+     
+    if(index){
+      while (node != nullptr) {
+        if (node->key == key) {
+          node->value = node->value + 1;
+          cond.notify_one();
+          mutex_vector[index].unlock();
+          return;
+        }
+        node = node->next;
+      }
+    }
+
+    //if we get here, then the key has not been found
+    node = new Node<K,V>(key, 1);
+    node->next = this->table[index];
+    this->table[index] = node;
+    this->count++;
+    if (((double)this->count)/this->capacity > this->loadFactor) {
+      int cap = this->capacity * 2;
+      this->resize(this->capacity * 2);
+    }
+    status = 1;
+    cond.notify_one();
+    mutex_vector[index].unlock();
   }
 
   /**

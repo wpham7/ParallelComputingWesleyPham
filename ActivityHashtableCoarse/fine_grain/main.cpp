@@ -2,7 +2,9 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
-
+#include<thread>
+#include<mutex>
+#include<iostream>
 #include "Dictionary.cpp"
 #include "MyHashtable.cpp"
 
@@ -45,7 +47,12 @@ std::vector<std::vector<std::string>> tokenizeLyrics(const std::vector<std::stri
   return ret;
 }
 
-
+void wordCount(MyHashtable<std::string, int> &dict, std::vector<std::string> filecontent, std::mutex& mut){
+  
+  for (int i=0; i<filecontent.size(); i++) {
+      dict.update(filecontent[i]);
+  }
+}
 
 int main(int argc, char **argv)
 {
@@ -76,7 +83,24 @@ int main(int argc, char **argv)
 
 
   // write code here
+  std::vector<std::thread> thread;
+  std::mutex mutex;
 
+  // Start Timer
+  auto start =std::chrono::steady_clock::now();
+
+  for(auto & filecontent:wordmap){
+    thread.push_back(std::thread(wordCount, std::ref(ht), std::ref(filecontent), std::ref(mutex)));
+  }
+  
+  // Stop Timer
+
+  for(auto & t : thread){
+    t.join();
+  }
+
+  auto stop = std::chrono::steady_clock::now();
+  std::chrono::duration<double> time_elapsed = stop-start;
 
 
 
@@ -87,15 +111,16 @@ int main(int argc, char **argv)
 
 
   // Check Hash Table Values 
-  /* (you can uncomment, but this must be commented out for tests)
+  //(you can uncomment, but this must be commented out for tests)
   for (auto it : dict) {
     if (it.second > thresholdCount)
       std::cout << it.first << " " << it.second << std::endl;
   }
-  */
+  
 
   // Do not touch this, need for test cases
   std::cout << ht.get(testWord) << std::endl;
+  std::cerr << time_elapsed.count()<<"\n";
 
   return 0;
 }
